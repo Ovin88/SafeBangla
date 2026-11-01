@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeBangla (সেফবাংলা) — Smart Disaster & Emergency Response System</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+  <!-- Top Global Alert Ticker -->
+  <aside class="alert-ticker" aria-label="Official Disaster Advisories">
+    <div class="ticker-badge">
+      <span class="pulsing-dot red"></span>
+      <span class="ticker-title" data-i18n="bmdAlertTitle">BMD DANGER ADVISORY NO. 7</span>
+    </div>
+    <div class="ticker-content-track">
+      <p class="ticker-text" data-i18n="tickerContent">
+        ⚠️ Cyclone Warning: Severe cyclonic storm over Bay of Bengal moving NNE towards Barishal & Chittagong. | 🌊 Surma River in Sylhet flowing 48cm above danger mark. | 📞 National Helpline 999 & Disaster Early Warning 1090 active 24/7.
+      </p>
+    </div>
+    <div class="ticker-actions">
+      <button id="networkToggleBtn" class="pill-btn status-online" title="Toggle Network Simulator">
+        <span class="status-indicator"></span>
+        <span id="networkStatusText">ONLINE (4G/LTE)</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Navigation Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M12 8v4"/>
+            <path d="M12 16h.01"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">SafeBangla <span class="badge-lang">সেফবাংলা</span></div>
+          <div class="brand-tagline" data-i18n="heroTagline">Crisis Intelligence & Zero-Network Resilience</div>
+        </div>
+      </div>
+
+      <!-- Role Selector -->
+      <nav class="role-nav" aria-label="Role Navigation">
+        <button class="role-btn active" data-role="citizen">
+          <span class="role-icon">👤</span>
+          <span data-i18n="roleCitizen">Citizen Portal</span>
+        </button>
+        <button class="role-btn" data-role="volunteer">
+          <span class="role-icon">🦺</span>
+          <span data-i18n="roleVolunteer">Volunteer & Rescue</span>
+          <span class="count-badge">4</span>
+        </button>
+        <button class="role-btn" data-role="hq">
+          <span class="role-icon">🛰️</span>
+          <span data-i18n="roleHq">Command HQ & Fleet</span>
+        </button>
+      </nav>
+
+      <!-- Language & Secondary Tools -->
+      <div class="header-tools">
+        <button id="langToggleBtn" class="pill-btn lang-btn" aria-label="Toggle Language">
+          <span class="lang-flag">🇧🇩</span>
+          <span id="currentLangLabel">বাংলা</span>
+        </button>
+        <button id="openAiChatBtn" class="action-btn-highlight" aria-label="AI Safety Assistant">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span data-i18n="aiAssistantBtn">AI Safety Guide</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="main-layout">
+
+    <!-- ==================== TAB 1: CITIZEN VIEW ==================== -->
+    <section id="citizenView" class="view-panel active">
+      <!-- Top Grid: SOS & Family Radar -->
+      <div class="hero-split-grid">
+        <!-- Emergency SOS Card -->
+        <article class="glass-card sos-card">
+          <div class="card-header">
+            <div>
+              <span class="eyebrow-tag danger" data-i18n="sosEyebrow">CRITICAL EMERGENCY</span>
+              <h2 class="card-title" data-i18n="sosCardTitle">Instant SOS Distress Beacon</h2>
+            </div>
+            <div class="telemetry-pill">
+              <span class="telemetry-icon">📡</span>
+              <span id="geoCoordsDisplay">23.8103° N, 90.4125° E (Dhaka)</span>
+            </div>
+          </div>
+
+          <p class="card-desc" data-i18n="sosCardDesc">
+            Press and hold the button for <strong>3 seconds</strong> to broadcast an emergency distress beacon. Automatically captures GPS telemetry, battery level, and initiates a 10s silent recording.
+          </p>
+
+          <div class="sos-action-area">
+            <div class="sos-rings-container">
+              <div class="pulse-ring ring-1"></div>
+              <div class="pulse-ring ring-2"></div>
+              <button id="sosMasterBtn" class="sos-master-button" aria-label="Emergency SOS button">
+                <div class="sos-btn-content">
+                  <span class="sos-text">SOS</span>
+                  <span class="sos-sub" id="sosStateText" data-i18n="holdToTrigger">HOLD 3s</span>
+                </div>
+                <svg class="progress-ring" viewBox="0 0 160 160">
+                  <circle class="progress-ring-bg" cx="80" cy="80" r="74" />
+                  <circle id="sosProgressCircle" class="progress-ring-fg" cx="80" cy="80" r="74" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- SOS Broadcast Status Banner -->
+          <div id="sosAlertBanner" class="alert-status-banner hidden">
+            <div class="banner-icon">🚨</div>
+            <div class="banner-body">
+              <strong id="sosAlertHeadline" data-i18n="sosBroadcastActive">EMERGENCY SOS BROADCASTED!</strong>
+              <p id="sosAlertSubline">Dispatched to Police, Fire Service, Red Crescent & 12 nearby volunteers.</p>
+              <div class="banner-meta">
+                <span>Packet ID: <code id="sosPacketId">SB-88219-SOS</code></span>
+                <span>Audio Stream: <strong>10s Encrypted Capture</strong></span>
+              </div>
+            </div>
+            <button id="cancelSosBtn" class="cancel-sos-btn" data-i18n="cancelSos">Cancel SOS</button>
+          </div>
+
+          <!-- Offline SMS Fallback Payload -->
+          <div class="offline-sms-box">
+            <div class="sms-box-header">
+              <span class="icon">💬</span>
+              <div>
+                <strong data-i18n="offlineSmsTitle">Zero-Network SMS Fallback</strong>
+                <p data-i18n="offlineSmsDesc">If cellular data drops, tap below to transmit this compressed payload via GSM text to gateway 999.</p>
+              </div>
+            </div>
+            <div class="sms-payload-wrapper">
+              <code id="smsPayloadContent">SB-SOS|LAT:23.8103|LNG:90.4125|BAT:84%|ACC:3m|TS:1730445100</code>
+              <button id="copySmsPayloadBtn" class="pill-btn mini-btn" data-i18n="copyPayload">Copy Payload</button>
+              <a id="dispatchSmsLink" href="sms:999?body=SB-SOS|LAT:23.8103|LNG:90.4125|BAT:84%|ACC:3m" class="pill-btn primary-btn mini-btn" data-i18n="sendViaSms">
+                Send SMS to 999
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Family Safety Circle & 15km Panic Radar -->
+        <article class="glass-card radar-card">
+          <div class="card-header">
+            <div>
+              <span class="eyebrow-tag cyan" data-i18n="familyRadarTag">P2P SAFETY NETWORK</span>
+              <h2 class="card-title" data-i18n="familyRadarTitle">Family Circle & 15km Panic Radar</h2>
+            </div>
+            <button id="iamSafeToggleBtn" class="pill-btn status-safe" data-i18n="iAmSafeBtn">
+              <span class="check-icon">✓</span>
+              <span id="safeStatusText">I AM SAFE (সবাই নিরাপদ)</span>
+            </button>
+          </div>
+
+          <p class="card-desc" data-i18n="familyRadarDesc">
+            Live sweeping radar tracking registered family members and relative distance during crisis events.
+          </p>
+
+          <div class="radar-visual-wrapper">
+            <canvas id="familyRadarCanvas" width="400" height="300"></canvas>
+            <div class="radar-legend">
+              <span class="legend-item"><span class="dot safe"></span> Safe (নিরাপদ)</span>
+              <span class="legend-item"><span class="dot danger"></span> In Danger (বিপদে)</span>
+              <span class="legend-item"><span class="dot offline"></span> Offline (অফলাইন)</span>
+            </div>
+          </div>
+
+          <!-- Family Member Status List -->
+          <div class="family-list" id="familyMemberList">
+            <!-- Dynamically populated via app.js -->
+          </div>
+        </article>
+      </div>
+
+      <!-- Middle Grid: Shelters & 90% Load Balancer + Hospitals -->
+      <div class="content-split-grid">
+        <!-- Shelter Finder & Load Balancer -->
+        <article class="glass-card shelters-card">
+          <div class="card-header">
+            <div>
+              <span class="eyebrow-tag emerald" data-i18n="sheltersTag">SMART LOAD BALANCER</span>
+              <h2 class="card-title" data-i18n="sheltersTitle">Safe Shelters & Real-Time Capacity</h2>
+            </div>
+            <div class="filter-controls">
+              <select id="shelterRegionSelect" class="styled-select" aria-label="Select Region">
+                <option value="all">All Divisions (সব বিভাগ)</option>
+                <option value="chittagong">Chittagong & Cox's Bazar</option>
+                <option value="barishal">Barishal & Patuakhali</option>
+                <option value="sylhet">Sylhet & Sunamganj</option>
+                <option value="khulna">Khulna & Sundarbans</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 90% Capacity Warning Banner (Dynamic) -->
+          <div id="shelterRerouteBanner" class="reroute-banner">
+            <div class="reroute-icon">⚠️</div>
+            <div class="reroute-text">
+              <strong data-i18n="balancerNotice">Smart Queue Balancer Active:</strong>
+              <span data-i18n="balancerDetail">Facilities exceeding 90% capacity automatically suggest alternate open shelters within 4km radius to prevent stampedes.</span>
+            </div>
+          </div>
+
+          <!-- Shelters List -->
+          <div class="shelters-scroll-grid" id="sheltersListContainer">
+            <!-- Dynamic shelter cards from JS -->
+          </div>
+        </article>
+
+        <!-- Emergency Hospitals & Ambulance Request -->
+        <article class="glass-card hospitals-card">
+          <div class="card-header">
+            <div>
+              <span class="eyebrow-tag amber" data-i18n="hospitalTag">HEALTH INFRASTRUCTURE</span>
+              <h2 class="card-title" data-i18n="hospitalTitle">Nearby Emergency Hospitals & ICU</h2>
+            </div>
+            <button id="requestAmbulanceQuickBtn" class="pill-btn primary-btn mini-btn">
+              🚑 <span data-i18n="quickAmbulanceBtn">Request Ambulance</span>
+            </button>
+          </div>
+
+          <div class="hospitals-scroll-grid" id="hospitalsListContainer">
+            <!-- Dynamic hospital cards from JS -->
+          </div>
+        </article>
+      </div>
+
+      <!-- Bottom Directory: National Emergency Contacts -->
+      <section class="glass-card emergency-hotlines-card">
+        <div class="card-header">
+          <div>
+            <span class="eyebrow-tag red" data-i18n="hotlineTag">24/7 TOLL-FREE DIRECTORY</span>
+            <h2 class="card-title" data-i18n="hotlineTitle">National Disaster & Emergency Response Hotlines</h2>
+          </div>
+          <p class="card-subtext" data-i18n="hotlineSub">Direct one-tap dialing to all national emergency gateways in Bangladesh.</p>
+        </div>
+
+        <div class="hotlines-grid">
+          <a href="tel:999" class="hotline-tile danger">
+            <div class="hotline-number">999</div>
+            <div class="hotline-details">
+              <strong>National Emergency Services</strong>
+              <span>Police, Fire, Ambulance (জাতীয় জরুরি সেবা)</span>
+            </div>
+            <span class="call-badge">Dial</span>
+          </a>
+          <a href="tel:16163" class="hotline-tile amber">
+            <div class="hotline-number">16163</div>
+            <div class="hotline-details">
+              <strong>Fire Service & Civil Defence</strong>
+              <span>HQ Operations & Rescue (ফায়ার সার্ভিস)</span>
+            </div>
+            <span class="call-badge">Dial</span>
+          </a>
+          <a href="tel:1090" class="hotline-tile cyan">
+            <div class="hotline-number">1090</div>
+            <div class="hotline-details">
+              <strong>Disaster Early Warning</strong>
+              <span>BMD Weather & Cyclone Interactive IVR (দুর্যোগ তথ্য)</span>
+            </div>
+            <span class="call-badge">Dial</span>
+          </a>
+          <a href="tel:16612" class="hotline-tile blue">
+            <div class="hotline-number">16612</div>
+            <div class="hotline-details">
+              <strong>Bangladesh Coast Guard</strong>
+              <span>Maritime, Coastal & Island Rescue (কোস্ট গার্ড)</span>
+            </div>
+            <span class="call-badge">Dial</span>
+          </a>
+          <a href="tel:16263" class="hotline-tile emerald">
+            <div class="hotline-number">16263</div>
+            <div class="hotline-details">
+              <strong>Health HelpLine</strong>
+              <span>Govt. 24/7 Doctor & Hospital Bed Advisory (স্বাস্থ্য বাতায়ন)</span>
+            </div>
+            <span class="call-badge">Dial</span>
+          </a>
+        </div>
+      </section>
+    </section>
+
+    <!-- ==================== TAB 2: VOLUNTEER & RESCUE VIEW ==================== -->
+    <section id="volunteerView" class="view-panel">
+      <!-- Volunteer Stats Overview -->
+      <div class="stats-counter-strip">
+        <div class="stat-box">
+          <span class="stat-value text-red" id="activeDistressCount">7</span>
+          <span class="stat-label" data-i18n="statPendingSos">Pending SOS Signals</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value text-emerald">142</span>
+          <span class="stat-label" data-i18n="statActiveVolunteers">Volunteers in Field</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value text-cyan">89</span>
+          <span class="stat-label" data-i18n="statRescuedToday">Citizens Rescued (24h)</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value text-amber">12</span>
+          <span class="stat-label" data-i18n="statAirdrops">Drone Airdrops Delivered</span>
+        </div>
+      </div>
+
+      <!-- Missions & Hazards Split -->
+      <div class="content-split-grid">
+        <!-- Live Distress Missions -->
+        <article class="glass-card missions-card">
+          <div class="card-header">
+            <div>
+              <span class="eyebrow-tag danger" data-i18n="missionEyebrow">RADAR DISPATCH</span>
+              <h2 class="card-title" data-i18n="missionTitle">Unassigned Emergency Distress Signals</h2>
+            </div>
+            <span class="live-pulse-badge">LIVE 5KM RADAR</span>
+          </div>
+
+          <div class="missions-list" id="missionsListContainer">
+            <!-- Dynamic missions from app.js -->
+          </div>
+        </article>
+
+        <!-- Crowdsourced Community Hazards Feed -->
+        <article class="glass-card hazards-card">
+          <div class="card-header">
+            <div>
+              <span class="eyebrow-tag amber" data-i18n="hazardEyebrow">COMMUNITY INTEL</span>
+              <h2 class="card-title" data-i18n="hazardTitle">Crowdsourced Incident & Road Block Feed</h2>
+            </div>
+            <button id="openReportHazardModalBtn" class="pill-btn primary-btn mini-btn">
+              + <span data-i18n="reportIncidentBtn">Report Incident</span>
+            </button>
+          </div>
+
+          <div class="hazards-list" id="hazardsListContainer">
+            <!-- Dynamic hazards from app.js -->
+          </div>
+        </article>
+      </div>
+
+      <!-- Volunteer Gamified Leaderboard & Verifiable Certificate Generator -->
+      <article class="glass-card leaderboard-card">
+        <div class="card-header">
+          <div>
+            <span class="eyebrow-tag purple" data-i18n="leaderboardTag">RECOGNITION & HONORS</span>
+            <h2 class="card-title" data-i18n="leaderboardTitle">Top Crisis Responders & Service Badges</h2>
+          </div>
+          <button id="generateCertBtn" class="pill-btn highlight-btn">
+            📜 <span data-i18n="genCertBtn">Generate Service Certificate</span>
+          </button>
+        </div>
+
+        <div class="leaderboard-table-wrapper">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Volunteer Name</th>
+                <th>Role & District</th>
+                <th>Missions</th>
+                <th>XP Points</th>
+                <th>Special Badges</th>
+              </tr>
+            </thead>
+            <tbody id="volunteerLeaderboardBody">
+              <!-- Dynamically populated from JS -->
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- ==================== TAB 3: COMMAND HQ & FLEET ==================== -->
+    <section id="hqView" class="view-panel">
+      <!-- Autonomous Drone Fleet Tracking -->
+      <div class="content-split-grid">
+        <article class="glass-card drone-card">
+          <div class="card-header">
+            <div>
+              <span class="eyebrow-tag cyan" data-i18n="droneEyebrow">AUTONOMOUS DISPATCH</span>
+              <h2 class="card-title" data-i18n="droneTitle">Autonomous Drone & Ground Delivery Fleet</h2>
+            </div>
+            <span class="live-telemetry-tag">ACTIVE AIRSPACE: 3 DRONES</span>
+          </div>
+
+          <div class="drone-fleet-grid" id="droneFleetContainer">
+            <!-- Dynamic drone cards from app.js -->
+          </div>
+        </article>
+
+        <!-- IoT River Basin Water Sensors -->
+        <article class="glass-card iot-card">
+          <div class="card-header">
+            <div>
+              <span class="eyebrow-tag red" data-i18n="iotEyebrow">HYDROLOGICAL TELEMETRY</span>
+              <h2 class="card-title" data-i18n="iotTitle">IoT River Basin Water Level Sensors</h2>
+            </div>
+            <button id="triggerFloodSimBtn" class="pill-btn mini-btn" title="Simulate River Surge Event">
+              ⚡ Test Flood Spike
+            </button>
+          </div>
+
+          <p class="card-desc" data-i18n="iotDesc">
+            Continuous real-time telemetry from automated ultrasonic water gauges deployed across flood-vulnerable river points in Bangladesh.
+          </p>
+
+          <div class="water-gauges-grid" id="waterGaugesContainer">
+            <!-- Dynamic water gauges from app.js -->
+          </div>
+        </article>
+      </div>
+
+      <!-- Shelter Load Balancer Strategic Dashboard -->
+      <article class="glass-card strategic-capacity-card">
+        <div class="card-header">
+          <div>
+            <span class="eyebrow-tag emerald" data-i18n="strategicTag">NATIONAL CAPACITY</span>
+            <h2 class="card-title" data-i18n="strategicTitle">Shelter Load Balancer & Dynamic Redistribution Grid</h2>
+          </div>
+          <span class="tag-status-good">SURGE OVERFLOW CAPACITY: 82%</span>
+        </div>
+
+        <div class="strategic-grid" id="strategicShelterGrid">
+          <!-- Dynamically populated from JS -->
+        </div>
+      </article>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal 1: AI Safety Assistant Chatbot -->
+  <div id="aiChatModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="aiChatTitle">
+    <div class="modal-dialog glass-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-bubble">🤖</div>
+          <div>
+            <h3 id="aiChatTitle" class="modal-title">AI Crisis Safety Assistant</h3>
+            <span class="modal-subtitle">দ্বিভাষিক আপদকালীন পরামর্শক (English & বাংলা)</span>
+          </div>
+        </div>
+        <button id="closeAiChatBtn" class="close-modal-btn" aria-label="Close AI Assistant">&times;</button>
+      </div>
+
+      <!-- Suggested Question Quick Chips -->
+      <div class="chat-chips-scroll">
+        <button class="chat-chip" data-prompt="What should I do during a Severe Cyclone Warning in coastal Bangladesh?">
+          🌪️ Cyclone Safety Protocol
+        </button>
+        <button class="chat-chip" data-prompt="হাওর বা আকস্মিক বন্যায় আটকা পড়লে তাৎক্ষণিক করণীয় কি?">
+          🌊 আকস্মিক বন্যা নির্দেশিকা
+        </button>
+        <button class="chat-chip" data-prompt="How to treat a poisonous snakebite during flood emergency?">
+          🐍 Snakebite First-Aid
+        </button>
+        <button class="chat-chip" data-prompt="বজ্রপাত থেকে বাঁচার জন্য খোলা জায়গায় করণীয় কি?">
+          ⚡ বজ্রপাত প্রতিরোধ
+        </button>
+      </div>
+
+      <!-- Chat History -->
+      <div class="chat-history-container" id="chatHistoryBox">
+        <div class="chat-message bot">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-bubble">
+            <p><strong>স্বাগতম! আমি সেফবাংলা এআই অ্যাসিস্ট্যান্ট।</strong></p>
+            <p>ঘূর্ণিঝড়, আকস্মিক বন্যা, ভূমিকম্প, অগ্নিকাণ্ড বা জরুরি প্রাথমিক চিকিৎসা নিয়ে যেকোনো প্রশ্ন করুন। আমি তাৎক্ষণিক পরামর্শ প্রদান করব।</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input Area -->
+      <form id="aiChatForm" class="chat-input-bar">
+        <input type="text" id="aiChatInput" placeholder="Ask crisis question (e.g. Flash flood first aid)..." required autocomplete="off">
+        <button type="submit" class="action-btn-highlight">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Digital Shelter Entry Pass / QR Code -->
+  <div id="shelterPassModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="passModalTitle">
+    <div class="modal-dialog glass-card pass-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-bubble green">🎫</div>
+          <div>
+            <h3 id="passModalTitle" class="modal-title">Digital Shelter Entry Pass</h3>
+            <span class="modal-subtitle">ইলেকট্রনিক আশ্রয়কেন্দ্র প্রবেশপত্র</span>
+          </div>
+        </div>
+        <button id="closePassModalBtn" class="close-modal-btn" aria-label="Close pass">&times;</button>
+      </div>
+
+      <div class="pass-body" id="passModalBody">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Report Community Hazard Form -->
+  <div id="reportHazardModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+    <div class="modal-dialog glass-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-bubble amber">⚠️</div>
+          <div>
+            <h3 id="reportModalTitle" class="modal-title">Report Hazard or Road Blockage</h3>
+            <span class="modal-subtitle">কমিউনিটি দুর্যোগ তথ্য সাবমিট করুন</span>
+          </div>
+        </div>
+        <button id="closeHazardModalBtn" class="close-modal-btn" aria-label="Close form">&times;</button>
+      </div>
+
+      <form id="hazardReportForm" class="hazard-form">
+        <div class="form-group">
+          <label for="hazardTypeInput">Incident Type (বিপদের ধরন)</label>
+          <select id="hazardTypeInput" class="styled-select" required>
+            <option value="ROAD_BLOCK">Road Blocked by Fallen Tree / Debris</option>
+            <option value="POWER_HAZARD">Live Electrical Wire / Fallen Pole</option>
+            <option value="FLASH_FLOOD">Severe Waterlogging / Inaccessible Culvert</option>
+            <option value="COLLAPSE">Structural Wall or Bridge Collapse</option>
+            <option value="MEDICAL_EMERGENCY">Cluster Medical Emergency / Dialysis Need</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="hazardLocationInput">Location & Landmark (স্থান ও পরিচয়)</label>
+          <input type="text" id="hazardLocationInput" placeholder="e.g. Near Sylhet Amberkhana Bridge, Road 4" required>
+        </div>
+
+        <div class="form-group">
+          <label for="hazardDescriptionInput">Details / Severity (বিবরণ)</label>
+          <textarea id="hazardDescriptionInput" rows="3" placeholder="Describe the obstruction or hazard..." required></textarea>
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" id="cancelHazardFormBtn" class="pill-btn">Cancel</button>
+          <button type="submit" class="pill-btn primary-btn">Broadcast Hazard Intel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Verifiable Service Certificate Preview -->
+  <div id="certificateModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="certModalTitle">
+    <div class="modal-dialog glass-card cert-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-bubble gold">🏅</div>
+          <div>
+            <h3 id="certModalTitle" class="modal-title">Certificate of Heroic Service</h3>
+            <span class="modal-subtitle">ডিজিটাল ভলান্টিয়ার স্বীকৃতি সনদ</span>
+          </div>
+        </div>
+        <button id="closeCertModalBtn" class="close-modal-btn" aria-label="Close certificate">&times;</button>
+      </div>
+
+      <div class="cert-sheet-container" id="certificateSheet">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div class="modal-footer-actions">
+        <button id="printCertBtn" class="pill-btn primary-btn">🖨️ Print / Save as PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio element for SOS sound feedback -->
+  <div id="audioHost" style="display:none;"></div>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div>
+        <strong>SafeBangla Ecosystem (সেফবাংলা)</strong> — Next-Gen AI Disaster & Emergency Response System.
+      </div>
+      <div class="footer-links">
+        <span>Dual-Engine: Native Android (Jetpack Compose M3) & Progressive Web App</span>
+        <span>•</span>
+        <span>Apache 2.0 Open Source Resilience</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

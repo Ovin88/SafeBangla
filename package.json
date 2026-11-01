@@ -1,0 +1,20 @@
+{
+  "name": "safebangla-web",
+  "version": "1.0.0",
+  "description": "SafeBangla Web Crisis Intelligence & Zero-Network Emergency Response System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "disaster-response",
+    "emergency-system",
+    "zero-network",
+    "bangladesh",
+    "sos",
+    "shelter-management"
+  ],
+  "author": "SafeBangla Team",
+  "license": "Apache-2.0"
+}
